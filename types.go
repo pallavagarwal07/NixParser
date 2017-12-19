@@ -7,6 +7,7 @@ import (
 type Num = *big.Rat
 type Str string
 type Var string
+type All interface{}
 
 type StrType int
 

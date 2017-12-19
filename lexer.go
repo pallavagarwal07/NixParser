@@ -60,7 +60,25 @@ func (x *nixLex) fromRegex(ret int, yylval *nixSymType) string {
 
 // Lex a variable.
 func (x *nixLex) variable(yylval *nixSymType) int {
-	yylval.Var = Var(x.fromRegex(VAR, yylval))
+	keywords := map[string]int{
+		"rec":    REC,
+		"or":     OR,
+		"true":   TRUE,
+		"false":  FALSE,
+		"null":   NULL,
+		"let":    LET,
+		"in":     IN,
+		"if":     IF,
+		"then":   THEN,
+		"else":   ELSE,
+		"assert": ASSERT,
+		"with":   WITH,
+	}
+	v := x.fromRegex(VAR, yylval)
+	if ret, ok := keywords[v]; ok {
+		return ret
+	}
+	yylval.Var = Var(v)
 	return VAR
 }
 
@@ -94,7 +112,7 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 			return eof
 		case InSlice(c, []rune("0123456789")):
 			return x.num(yylval)
-		case InSlice(c, []rune("+-*/()=,")):
+		case InSlice(c, []rune("+-*/()=,[];@.")):
 			x.source = x.source[size(c):]
 			return int(c)
 
@@ -110,6 +128,7 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 		case c == '{':
 			x.source = x.source[size(c):]
 			x.braces[len(x.braces)-1] += 1
+
 		case c == '}':
 			if x.braces[len(x.braces)-1] > 0 {
 				x.source = x.source[size(c):]
@@ -124,6 +143,7 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 				}
 				x.source = append([]byte("+ "+end), x.source[size(c):]...)
 			}
+
 		case c == '"':
 			return x.stringNorm(yylval)
 		case c == '\'':
