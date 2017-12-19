@@ -61,18 +61,19 @@ func (x *nixLex) fromRegex(ret int, yylval *nixSymType) string {
 // Lex a variable.
 func (x *nixLex) variable(yylval *nixSymType) int {
 	keywords := map[string]int{
-		"rec":    REC,
-		"or":     OR,
-		"true":   TRUE,
-		"false":  FALSE,
-		"null":   NULL,
-		"let":    LET,
-		"in":     IN,
-		"if":     IF,
-		"then":   THEN,
-		"else":   ELSE,
-		"assert": ASSERT,
-		"with":   WITH,
+		"rec":     REC,
+		"or":      OR,
+		"true":    TRUE,
+		"false":   FALSE,
+		"null":    NULL,
+		"let":     LET,
+		"in":      IN,
+		"if":      IF,
+		"then":    THEN,
+		"else":    ELSE,
+		"assert":  ASSERT,
+		"with":    WITH,
+		"inherit": INHERIT,
 	}
 	v := x.fromRegex(VAR, yylval)
 	if ret, ok := keywords[v]; ok {
@@ -112,7 +113,7 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 			return eof
 		case InSlice(c, []rune("0123456789")):
 			return x.num(yylval)
-		case InSlice(c, []rune("+-*/()=,[];@.")):
+		case InSlice(c, []rune("+-*/()=,[];@.:")):
 			x.source = x.source[size(c):]
 			return int(c)
 
@@ -128,11 +129,13 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 		case c == '{':
 			x.source = x.source[size(c):]
 			x.braces[len(x.braces)-1] += 1
+			return int(c)
 
 		case c == '}':
 			if x.braces[len(x.braces)-1] > 0 {
 				x.source = x.source[size(c):]
 				x.braces[len(x.braces)-1] -= 1
+				return int(c)
 			} else {
 				x.braces = x.braces[:len(x.braces)-1]
 				strType := x.stack[len(x.stack)-1]
