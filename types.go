@@ -20,22 +20,18 @@ const (
 
 type StrTerm int
 
-// Termination type.
-// STR = Terminated using proper closing quotation.
-// VAR = Parser terminated string due to anti-quotation.
-const (
-	STR StrTerm = iota
-	VAR
-)
-
-type FSM map[State]map[rune]State
+type FSM struct {
+	St  map[State]map[rune]State
+	Ac  []State
+	Rj  []State
+	End string
+	Var []State
+}
 type State int
 
 // Reusable state variables.
 const (
-	AC State = iota
-	RJ
-	S0
+	S0 State = iota
 	S1
 	S2
 	S3
@@ -44,4 +40,15 @@ const (
 	S6
 	S7
 	S8
+
+	PEEK State = 1 << 30
+	U0   State = iota | PEEK
+	U1
+	U2
+	U3
+	U4
+	U5
+	U6
+	U7
+	U8
 )

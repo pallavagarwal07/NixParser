@@ -17,13 +17,14 @@ import (
 type nixLex struct {
 	source []byte
 	peek   rune
+	stack  []StrType
+	braces []int
 }
 
 // The parser expects the lexer to return 0 on EOF. Give it a name for clarity.
 const eof = 0
 
 var Regex = map[int]*regexp.Regexp{}
-var Stack = []StrType{}
 
 func init() {
 	Regex[NUM] = regexp.MustCompile(`^[0-9][0-9\.eE]*`)
@@ -41,7 +42,6 @@ func (x *nixLex) next() rune {
 		return eof
 	}
 	c, size := utf8.DecodeRune(x.source)
-	//x.source = x.source[size:]
 	if c == utf8.RuneError && size == 1 {
 		log.Print("invalid utf8")
 		return x.next()
@@ -77,7 +77,11 @@ func (x *nixLex) num(yylval *nixSymType) int {
 }
 
 func (x *nixLex) stringNorm(yylval *nixSymType) int {
-	return STR
+	return NormStrM.RunState(S0, x, yylval)
+}
+
+func (x *nixLex) stringMult(yylval *nixSymType) int {
+	return MultStrM.RunState(S0, x, yylval)
 }
 
 // The parser calls this method to get each new token. This implementation
@@ -90,7 +94,7 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 			return eof
 		case InSlice(c, []rune("0123456789")):
 			return x.num(yylval)
-		case InSlice(c, []rune("+-*/(){}=")):
+		case InSlice(c, []rune("+-*/()=,")):
 			x.source = x.source[size(c):]
 			return int(c)
 
@@ -103,8 +107,27 @@ func (x *nixLex) Lex(yylval *nixSymType) int {
 			x.source = x.source[size(c):]
 			return '/'
 
+		case c == '{':
+			x.source = x.source[size(c):]
+			x.braces[len(x.braces)-1] += 1
+		case c == '}':
+			if x.braces[len(x.braces)-1] > 0 {
+				x.source = x.source[size(c):]
+				x.braces[len(x.braces)-1] -= 1
+			} else {
+				x.braces = x.braces[:len(x.braces)-1]
+				strType := x.stack[len(x.stack)-1]
+				x.stack = x.stack[:len(x.stack)-1]
+				end := "\""
+				if strType == MULT {
+					end = "''"
+				}
+				x.source = append([]byte("+ "+end), x.source[size(c):]...)
+			}
 		case c == '"':
 			return x.stringNorm(yylval)
+		case c == '\'':
+			return x.stringMult(yylval)
 		case unicode.IsLetter(c):
 			return x.variable(yylval)
 		case InSlice(c, []rune(" \t\n\r")):
