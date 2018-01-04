@@ -1,0 +1,18 @@
+language: go
+go:
+    - 1.9
+    - master
+
+go_import_path: github.com/pallavagarwal07/NixParser
+
+before_install:
+    - go get -u golang.org/x/tools/cmd/goyacc
+    - go get -u golang.org/x/tools/cmd/goimports
+
+install:
+    - mkdir build
+    - go generate
+
+script:
+    - cd build
+    - go build *.go

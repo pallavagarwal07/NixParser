@@ -1,6 +1,14 @@
 # Nix Parser
 
 This is a parser for nix expression language written in Go.
+This uses golang type aliases hence it is supported on go 1.9+. This may change in future.
+
+To Install Dependencies:
+
+```
+go get -u golang.org/x/tools/cmd/goyacc
+go get -u golang.org/x/tools/cmd/goimports
+```
 
 To Build:
 

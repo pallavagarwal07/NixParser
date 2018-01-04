@@ -23,7 +23,7 @@ import (
 }
 
 %type <All> expr expr1 expr2 expr3
-%type <All> set attr list expr1 expr1List attrList letexpr func varSet orexpr
+%type <All> set attr list expr1List attrList letexpr func varSet orexpr
 %type <All> varList pattern ifexpr assert withexpr selection selectionList
 %type <All> value
 
