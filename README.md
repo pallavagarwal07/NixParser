@@ -1,6 +1,7 @@
 # Nix Parser
 
 This is a parser for nix expression language written in Go.
+This uses golang type aliases hence it is supported on go 1.9+. This may change in future.
 
 To Install Dependencies:
 
