@@ -2,6 +2,13 @@
 
 This is a parser for nix expression language written in Go.
 
+To Install Dependencies:
+
+```
+go get -u golang.org/x/tools/cmd/goyacc
+go get -u golang.org/x/tools/cmd/goimports
+```
+
 To Build:
 
 ```
